@@ -77,6 +77,9 @@ public abstract class BeanFactoryUtils {
 	 * @param name the name of the bean
 	 * @return the transformed name
 	 * @see BeanFactory#FACTORY_BEAN_PREFIX
+	 *
+	 * 首先判断是不是有&前缀，没有就直接返回，说明不是FactoryBean的名字；
+	 * 否则就从缓存里获取，然后把前缀&去掉返回。
 	 */
 	public static String transformedBeanName(String name) {
 		Assert.notNull(name, "'name' must not be null");

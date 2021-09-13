@@ -58,6 +58,8 @@ import org.springframework.util.StringValueResolver;
  * @see org.springframework.context.MessageSourceAware
  * @see org.springframework.context.ApplicationContextAware
  * @see org.springframework.context.support.AbstractApplicationContext#refresh()
+ *
+ * 可用来处理实现了上面这些Aware接口的bean对象
  */
 class ApplicationContextAwareProcessor implements BeanPostProcessor {
 
@@ -103,6 +105,9 @@ class ApplicationContextAwareProcessor implements BeanPostProcessor {
 		return bean;
 	}
 
+	/***
+	 * 如果bean实现了相关的Aware接口，则调用相关的方法
+	 **/
 	private void invokeAwareInterfaces(Object bean) {
 		if (bean instanceof EnvironmentAware) {
 			((EnvironmentAware) bean).setEnvironment(this.applicationContext.getEnvironment());

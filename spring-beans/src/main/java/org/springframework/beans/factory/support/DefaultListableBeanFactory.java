@@ -126,6 +126,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
 	static {
 		try {
+			// JSR-330 支持
 			javaxInjectProviderClass =
 					ClassUtils.forName("javax.inject.Provider", DefaultListableBeanFactory.class.getClassLoader());
 		}
@@ -136,7 +137,9 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	}
 
 
-	/** Map from serialized id to factory instance. */
+	/** Map from serialized id to factory instance.
+	 * DefaultListableBeanFactory引用的缓存
+	 * */
 	private static final Map<String, Reference<DefaultListableBeanFactory>> serializableFactories =
 			new ConcurrentHashMap<>(8);
 
@@ -144,13 +147,19 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	@Nullable
 	private String serializationId;
 
-	/** Whether to allow re-registration of a different definition with the same name. */
+	/** Whether to allow re-registration of a different definition with the same name.
+	 * 是否允许覆盖同名称不同定义的对象
+	 * */
 	private boolean allowBeanDefinitionOverriding = true;
 
-	/** Whether to allow eager class loading even for lazy-init beans. */
+	/** Whether to allow eager class loading even for lazy-init beans.
+	 * 是否允许懒加载
+	 * */
 	private boolean allowEagerClassLoading = true;
 
-	/** Optional OrderComparator for dependency Lists and arrays. */
+	/** Optional OrderComparator for dependency Lists and arrays.
+	 * 依赖排序顺序
+	 * */
 	@Nullable
 	private Comparator<Object> dependencyComparator;
 
@@ -872,12 +881,17 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
 		// Trigger initialization of all non-lazy singleton beans...
 		for (String beanName : beanNames) {
+			// 获取Bean的定义信息，RootBeanDefinition
 			RootBeanDefinition bd = getMergedLocalBeanDefinition(beanName);
+			// Bean不是抽象的，是单实例的，非懒加载；
 			if (!bd.isAbstract() && bd.isSingleton() && !bd.isLazyInit()) {
+				// 根据名字判断是否是FactoryBean
 				if (isFactoryBean(beanName)) {
+					// 是FactoryBean需要根据前缀&获取Bean
 					Object bean = getBean(FACTORY_BEAN_PREFIX + beanName);
 					if (bean instanceof FactoryBean) {
 						FactoryBean<?> factory = (FactoryBean<?>) bean;
+						// 是否需要立即创建FactoryBean中的Bean
 						boolean isEagerInit;
 						if (System.getSecurityManager() != null && factory instanceof SmartFactoryBean) {
 							isEagerInit = AccessController.doPrivileged(
@@ -894,6 +908,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 					}
 				}
 				else {
+					// 非FactoryBean
 					getBean(beanName);
 				}
 			}
@@ -902,10 +917,12 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		// Trigger post-initialization callback for all applicable beans...
 		for (String beanName : beanNames) {
 			Object singletonInstance = getSingleton(beanName);
+			// 判断Bean是否实现了SmartInitializingSingleton接口，
 			if (singletonInstance instanceof SmartInitializingSingleton) {
 				SmartInitializingSingleton smartSingleton = (SmartInitializingSingleton) singletonInstance;
 				if (System.getSecurityManager() != null) {
 					AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
+						// 执行afterSingletonsInstantiated()；
 						smartSingleton.afterSingletonsInstantiated();
 						return null;
 					}, getAccessControlContext());

@@ -87,27 +87,40 @@ public class XmlValidationModeDetector {
 	 * @throws IOException in case of I/O failure
 	 * @see #VALIDATION_DTD
 	 * @see #VALIDATION_XSD
+	 *
+	 * 在提供的InputStream中检测XML文档的验证模式
+	 * 注意，提供的InputStream在这个方法return之前会被关闭
 	 */
 	public int detectValidationMode(InputStream inputStream) throws IOException {
 		// Peek into the file to look for DOCTYPE.
+		// 查找文件的DOCTYPE
 		BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
 		try {
 			boolean isDtdValidated = false;
 			String content;
 			while ((content = reader.readLine()) != null) {
+
+				// 删除注释内容，因为非注释内容要么是DOCTYPE声明要么是文档的根元素对象
 				content = consumeCommentTokens(content);
+
+				// 剥离注释后完全没内容就继续循环
 				if (this.inComment || !StringUtils.hasText(content)) {
 					continue;
 				}
+
+				// 有DOCTYPE声明，就跳出去
 				if (hasDoctype(content)) {
 					isDtdValidated = true;
 					break;
 				}
+				// 开头是"<"，后面第一个字符是字母，就退出，表示已经检测完成。
 				if (hasOpeningTag(content)) {
 					// End of meaningful data...
 					break;
 				}
 			}
+
+			// 当遍历到名称空间了也就是"<beans xmlns=...>"还没有DOCTYPE声明那么就判定他为XSD验证
 			return (isDtdValidated ? VALIDATION_DTD : VALIDATION_XSD);
 		}
 		catch (CharConversionException ex) {
@@ -134,9 +147,12 @@ public class XmlValidationModeDetector {
 	 * tokens will have consumed for the supplied content before passing the remainder to this method.
 	 */
 	private boolean hasOpeningTag(String content) {
+		//注释则退出
 		if (this.inComment) {
 			return false;
 		}
+
+		//判断是否 开头是"<"，后面第一个字符是字母
 		int openTagIndex = content.indexOf('<');
 		return (openTagIndex > -1 && (content.length() > openTagIndex + 1) &&
 				Character.isLetter(content.charAt(openTagIndex + 1)));

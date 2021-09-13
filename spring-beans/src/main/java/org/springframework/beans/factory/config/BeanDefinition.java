@@ -37,6 +37,8 @@ import org.springframework.lang.Nullable;
  * @see ConfigurableListableBeanFactory#getBeanDefinition
  * @see org.springframework.beans.factory.support.RootBeanDefinition
  * @see org.springframework.beans.factory.support.ChildBeanDefinition
+ *
+ * BeanDefinition存储bean的信息，用来生成bean实例
  */
 public interface BeanDefinition extends AttributeAccessor, BeanMetadataElement {
 

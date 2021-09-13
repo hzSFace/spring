@@ -58,6 +58,9 @@ import org.springframework.beans.BeansException;
  * @since 06.07.2003
  * @see BeanPostProcessor
  * @see PropertyResourceConfigurer
+ *
+ * BeanFactory后置处理器，对BeanDefinition对象进行修改
+ * Spring容器加载了bean定义，bean未实例化之前执行
  */
 @FunctionalInterface
 public interface BeanFactoryPostProcessor {

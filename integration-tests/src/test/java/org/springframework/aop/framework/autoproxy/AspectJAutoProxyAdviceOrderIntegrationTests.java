@@ -61,6 +61,7 @@ class AspectJAutoProxyAdviceOrderIntegrationTests {
 		@Test
 		void afterAdviceIsInvokedLast(@Autowired Echo echo, @Autowired AfterAdviceFirstAspect aspect) throws Exception {
 			assertThat(aspect.invocations).isEmpty();
+			//执行echo.echo方法，会被AfterAdviceFirstAspect拦截
 			assertThat(echo.echo(42)).isEqualTo(42);
 			assertThat(aspect.invocations).containsExactly("around - start", "before", "after returning", "after", "around - end");
 
@@ -101,7 +102,9 @@ class AspectJAutoProxyAdviceOrderIntegrationTests {
 		}
 	}
 
-
+	/**
+	 * AfterAdviceFirstConfig主配置类添加@EnableAspectJAutoProxy注解，开启AOP支持
+	 * */
 	@Configuration
 	@EnableAspectJAutoProxy(proxyTargetClass = true)
 	static class AfterAdviceFirstConfig {
@@ -150,6 +153,12 @@ class AspectJAutoProxyAdviceOrderIntegrationTests {
 
 		List<String> invocations = new ArrayList<>();
 
+		/**
+		 * @Description 拦截echo方法
+		 * @return void
+		 * @Author HZHEN
+		 * @Date 2021/9/9 10:32
+		 **/
 		@Pointcut("execution(* echo(*))")
 		void echo() {
 		}

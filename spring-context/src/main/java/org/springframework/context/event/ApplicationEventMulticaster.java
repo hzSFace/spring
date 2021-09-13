@@ -33,6 +33,8 @@ import org.springframework.lang.Nullable;
  * @author Juergen Hoeller
  * @author Stephane Nicoll
  * @see ApplicationListener
+ *
+ * 事件派发
  */
 public interface ApplicationEventMulticaster {
 
